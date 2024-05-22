@@ -2,6 +2,7 @@ const { Router } = require("express");
 const { User } = require("../Schemas/user.model");
 const zod = require("zod");
 const router = Router();
+const Balance = require("../Schemas/balance.model.js");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const JWT_Password = require("../config.js");
@@ -34,6 +35,7 @@ router.post("/signup", async (req, res) => {
       password: hash,
       username,
     });
+    const balance = await Balance.create({ user , balance : Math.floor(Math.random()*990)+10});
     const userID = user._id;
     const token = jwt.sign({ userID, username }, JWT_Password);
     res.status(200).json({ msg: "Signup completed", token });
@@ -76,29 +78,28 @@ router.put("/update", authoriseUser, async (req, res) => {
   }
 });
 
-router.get("/bulk", async(req, res) => {
-  const filter = req.query.filter; 
-  const users = await User.find(
-    {
-      $or:[{
-        firstname : {
-          "$regex" : filter
-        }, 
-      },{
-        lastname : {
-          "$regex" : filter
-        }
-      }]
-    }
-  )
-  res.json({
-    users : users.map(item=>(
+router.get("/bulk", async (req, res) => {
+  const filter = req.query.filter || "";
+  const users = await User.find({
+    $or: [
       {
-        firstname : item.firstname, 
-        lastname : item.lastname, 
-        username : item.username, 
-      }
-    ))
-  })
+        firstname: {
+          $regex: filter,
+        },
+      },
+      {
+        lastname: {
+          $regex: filter,
+        },
+      },
+    ],
+  });
+  res.json({
+    users: users.map((item) => ({
+      firstname: item.firstname,
+      lastname: item.lastname,
+      username: item.username,
+    })),
+  });
 });
 module.exports = router;

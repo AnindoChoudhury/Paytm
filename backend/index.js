@@ -1,10 +1,12 @@
 const express = require("express");
 const {Connect} = require("./db.js/connect.js");
-const userRouter = require("./routes/index.js")
+const userRouter = require("./routes/user.js")
 const cors = require("cors");
+const accountRouter = require("./routes/account.js")
 const app = express(); 
 app.use(express.json());
-app.use("/api/v1",userRouter);
+app.use("/api/v1/user",userRouter);
+app.use("/api/v1/account",accountRouter);
 app.use(cors());
 app.listen(3000,async()=>
 {
