@@ -6,6 +6,7 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const JWT_Password = require("../config.js");
 const authoriseUser = require("../middlewares/authMiddleware.js");
+const { setDriver } = require("mongoose");
 router.post("/signup", async (req, res) => {
   const firstname = req.body.firstname;
   const lastname = req.body.lastname;
@@ -25,12 +26,17 @@ router.post("/signup", async (req, res) => {
     return;
   }
   try {
-    const salt = await bcrypt.genSalt(10); 
-    const hash = await bcrypt.hash(password,salt); 
-    const user = await User.create({firstname,lastname,password:hash,username});
-    const userID = user._id; 
-    const token = jwt.sign({userID, username},JWT_Password);
-    res.status(200).json({msg : "Signup completed",token});
+    const salt = await bcrypt.genSalt(10);
+    const hash = await bcrypt.hash(password, salt);
+    const user = await User.create({
+      firstname,
+      lastname,
+      password: hash,
+      username,
+    });
+    const userID = user._id;
+    const token = jwt.sign({ userID, username }, JWT_Password);
+    res.status(200).json({ msg: "Signup completed", token });
   } catch (err) {
     res.send("All fields are required" + err);
   }
@@ -41,28 +47,58 @@ router.post("/signin", authoriseUser, (req, res) => {
 });
 
 router.put("/update", authoriseUser, async (req, res) => {
-  const updatedFirstName = req.body.firstname;
-  const updatedLastName = req.body.lastname;
-  const updatedPassword = req.body.password;
- 
   const token = req.headers.authorization.split(" ")[1];
   const decoded = jwt.verify(token, JWT_Password);
+
+  const bodySchema = zod.object({
+    firstname: zod.string().optional(),
+    lastname: zod.string().optional(),
+    password: zod.string().min(5).optional(),
+  });
+
+  if (!bodySchema.safeParse(req.body).success) {
+    res.status(303).json({ msg: "Invalid inputs" });
+    return;
+  }
+
   try {
-    let hashedPassword; 
-    if(updatedPassword)
-    {
+    let hashedPassword;
+    if (req.body.password) {
       const salt = await bcrypt.genSalt(10);
-      hashedPassword = await bcrypt.hash(updatedPassword,salt);
+      hashedPassword = await bcrypt.hash(req.body.password, salt);
+      req.body.password = hashedPassword;
     }
-    await User.findByIdAndUpdate(decoded.userID,{
-      firstname: updatedFirstName || firstname,
-      lastname: updatedLastName || lastname,
-      password: hashedPassword || password,
-    });
+    await User.findByIdAndUpdate(decoded.userID, req.body);
     res.status(200).json({ msg: "Updated information" });
   } catch (err) {
     console.log(err);
     res.status(404).json({ msg: "Failed to update" });
   }
+});
+
+router.get("/bulk", async(req, res) => {
+  const filter = req.query.filter; 
+  const users = await User.find(
+    {
+      $or:[{
+        firstname : {
+          "$regex" : filter
+        }, 
+      },{
+        lastname : {
+          "$regex" : filter
+        }
+      }]
+    }
+  )
+  res.json({
+    users : users.map(item=>(
+      {
+        firstname : item.firstname, 
+        lastname : item.lastname, 
+        username : item.username, 
+      }
+    ))
+  })
 });
 module.exports = router;

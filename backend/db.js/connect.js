@@ -1,9 +1,9 @@
 const mongoose = require("mongoose");
+require('dotenv').config()
 const { User } =  require("../Schemas/user.model.js");
-
 function Connect()
 {
-mongoose.connect("mongodb+srv://admin:4dmNTfiZtVIplxgh@cluster0.182kjcd.mongodb.net/Paytm").then(()=>{
+mongoose.connect(`${process.env.MONGO_URL}/Paytm`).then(()=>{
     console.log("mongo db connected")
 }).catch((err)=>
 {
