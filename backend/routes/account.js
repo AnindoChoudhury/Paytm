@@ -1,6 +1,7 @@
 const { Router } = require("express");
 const router = Router();
-const {User} = require("../Schemas/user.model")
+const mongoose = require("mongoose");
+const { User } = require("../Schemas/user.model.js");
 const authoriseUser = require("../middlewares/authMiddleware");
 const Balance = require("../Schemas/balance.model");
 const jwt = require("jsonwebtoken");
@@ -19,11 +20,13 @@ router.get("/balance", authoriseUser, async (req, res) => {
 });
 
 // transfer cash from one account to another
-router.post("/transfer", authoriseUser,async (req, res) => {
+router.post("/transfer", authoriseUser, async (req, res) => {
   const reqBodySchema = zod.object({
     toUsername: zod.string(),
     amount: zod.number(),
   });
+  const token = req.headers.authorization.split(" ")[1];
+  const senderUserID = jwt.verify(token, JWT_Password).userID;
   if (!reqBodySchema.safeParse(req.body).success) {
     res.status(403).json({ msg: "Wrong inputs" });
     return;
@@ -33,23 +36,50 @@ router.post("/transfer", authoriseUser,async (req, res) => {
   // If server gets down in between a transaction, the whole transaction should be rolled back
   // Immediate concurrent requests should not surpass If checks
   const session = await mongoose.startSession();
-  const {toUsername : username, amount} = req.body; 
-  session.startTransaction(); 
-  if(!await User.findOne({username}))
-  {
-    res.status.json({msg : "Such an user does not exist"}); 
-    return; 
+  const { toUsername: username, amount } = req.body;
+  session.startTransaction();
+
+  const receiver = await User.findOne({ username });
+  if (!receiver) {
+    res.status(303).json({ msg: "Not a valid user" });
+    return;
   }
-  const token = req.headers.authorization.split(" ")[1];
-  const UserID = jwt.verify(token, JWT_Password).userID;
-  const sender = await Balance.findOne({user : UserID}); 
-  if(sender.balance<amount)
-  {
-    res.status(202).json({msg : "Insufficient balance"});
-    return ; 
+
+  const sender = await Balance.findOne({ user: senderUserID });
+  const receiverUserID = (await User.findOne({ username }))._id;
+  const receiverAccount = await Balance.findOne({ user: receiverUserID });
+  const senderUsername = (await User.findById(sender.user)).username;
+  if (senderUsername == username) {
+    res.status(303).json({ msg: "Self transfer is not possible" });
+    return;
   }
+  if (sender.balance < amount) {
+    res.status(202).json({ msg: "Insufficient balance" });
+    return;
+  }
+  // Transaction logic (credit and debit in DB)
+  try {
+    await Balance.findOneAndUpdate(
+      { user: senderUserID },
+      {
+        $inc: {
+          balance: -amount,
+        },
+      }
+    );
+    await Balance.findOneAndUpdate(
+      { user: receiverUserID },
+      {
+        $inc: {
+          balance: amount,
+        },
+      }
+    );
+  } catch (err) {
+    console.log("Transaction failed " + err);
+  }
+  session.commitTransaction(); 
+  res.status(200).json({msg : "Transaction successful"});
+
 });
 module.exports = router;
-
-
-
