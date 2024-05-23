@@ -39,21 +39,23 @@ router.post("/transfer", authoriseUser, async (req, res) => {
   const { toUsername: username, amount } = req.body;
   session.startTransaction();
 
-  const receiver = await User.findOne({ username });
+  const receiver = await User.findOne({ username }).session(session);
   if (!receiver) {
+    await session.abortTransaction();
     res.status(303).json({ msg: "Not a valid user" });
     return;
   }
 
   const sender = await Balance.findOne({ user: senderUserID });
-  const receiverUserID = (await User.findOne({ username }))._id;
-  const receiverAccount = await Balance.findOne({ user: receiverUserID });
-  const senderUsername = (await User.findById(sender.user)).username;
+  const receiverUserID = (await User.findOne({ username }).session(session))._id;
+  const senderUsername = (await User.findById(sender.user).session(session)).username;
   if (senderUsername == username) {
+    await session.abortTransaction();
     res.status(303).json({ msg: "Self transfer is not possible" });
     return;
   }
   if (sender.balance < amount) {
+    await session.abortTransaction();
     res.status(202).json({ msg: "Insufficient balance" });
     return;
   }
@@ -66,7 +68,7 @@ router.post("/transfer", authoriseUser, async (req, res) => {
           balance: -amount,
         },
       }
-    );
+    ).session(session);
     await Balance.findOneAndUpdate(
       { user: receiverUserID },
       {
@@ -74,12 +76,13 @@ router.post("/transfer", authoriseUser, async (req, res) => {
           balance: amount,
         },
       }
-    );
+    ).session(session);
   } catch (err) {
     console.log("Transaction failed " + err);
   }
-  session.commitTransaction(); 
-  res.status(200).json({msg : "Transaction successful"});
-
+  session.commitTransaction();
+  res.status(200).json({ msg: "Transaction successful" });
 });
+
+
 module.exports = router;
