@@ -2,9 +2,16 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { Toaster, toast } from "sonner";
 
 export default function Dashboard() {
-    const navigate = useNavigate(); 
+  const navigate = useNavigate();
+  useEffect(() => {
+      if(!localStorage.getItem("dashboardLoadStatus"))
+      toast(`Welcome ${localStorage.getItem("username")}`);
+      localStorage.setItem("dashboardLoadStatus", "true"); 
+  }, []);
   const users = [
     {
       firstname: "Anindo",
@@ -27,6 +34,8 @@ export default function Dashboard() {
   ];
   return (
     <div className="p-4">
+      <Toaster position="top-center" />
+
       <div className="flex justify-between items-center">
         <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
           The Payment App
@@ -50,10 +59,13 @@ export default function Dashboard() {
                   <p className="text-sm flex items-center font-medium leading-none">{`${item.firstname} ${item.lastname}`}</p>
                 </div>
                 <div className="flex justify-end items-center">
-                  <Button onClick={()=>
-                {
-                    navigate("/send")
-                }}>Send money</Button>
+                  <Button
+                    onClick={() => {
+                      navigate("/send");
+                    }}
+                  >
+                    Send money
+                  </Button>
                 </div>
               </div>
             );

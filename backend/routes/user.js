@@ -7,13 +7,16 @@ const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const JWT_Password = require("../config.js");
 const authoriseUser = require("../middlewares/authMiddleware.js");
-const { setDriver } = require("mongoose");
 router.post("/signup", async (req, res) => {
-  const firstname = req.body.firstname;
-  const lastname = req.body.lastname;
-  const username = req.body.username;
-  const password = req.body.password;
+  const {firstname,lastname,username,password} = req.body;
+ 
   const passwordSchema = zod.string().min(5);
+  // All fields should exist
+  if(!firstname || !lastname || !username || !password)
+  {
+    res.status(300).json({msg : "All fields are required"});
+    return; 
+  }
   // Zod validation for password
   if (!passwordSchema.safeParse(password).success) {
     res
@@ -23,32 +26,52 @@ router.post("/signup", async (req, res) => {
   }
   // Prevent duplication of the same username
   if (await User.findOne({ username })) {
-    res.status(300).json({ msg: "User already exists" });
+    res.status(300).json({ msg: "Username exists" });
     return;
   }
   try {
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
+    // User document creation
     const user = await User.create({
       firstname,
       lastname,
       password: hash,
       username,
     });
+    // Balance document creation
     const balance = await Balance.create({
       user,
       balance: Math.floor(Math.random() * 990) + 10,
     });
     const userID = user._id;
     const token = jwt.sign({ userID, username }, JWT_Password);
-    res.status(200).json({ msg: "Signup completed", token });
+    // Response is sent with a message and token 
+    res.status(200).json({ msg: "Signup completed", token, username : `${firstname} ${lastname}`});
   } catch (err) {
     res.send("All fields are required" + err);
   }
 });
 
-router.post("/signin", authoriseUser, (req, res) => {
-  res.status(200).json({ msg: "Login done" });
+router.post("/signin", async(req, res) => {
+
+  const {username, password} = req.body; 
+  if(!await User.findOne({username}))
+  {
+    res.status(300).json({msg : "Incorrect username"}); 
+    return ; 
+  }
+  const user = await User.findOne({username}); 
+  const match = await bcrypt.compare(password,user.password);                      
+  if(!match)
+  {
+    res.status(300).json({msg : "Incorrect password"});
+    return; 
+  }
+  const token = jwt.sign({userID : user._id,
+  username : user.username},JWT_Password); 
+  console.log(token); 
+  res.status(200).json({ msg: "Login done", username : `${user.firstname} ${user.lastname}`, token});
 });
 
 router.put("/update", authoriseUser, async (req, res) => {
