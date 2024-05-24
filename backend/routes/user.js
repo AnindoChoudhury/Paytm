@@ -35,7 +35,10 @@ router.post("/signup", async (req, res) => {
       password: hash,
       username,
     });
-    const balance = await Balance.create({ user , balance : Math.floor(Math.random()*990)+10});
+    const balance = await Balance.create({
+      user,
+      balance: Math.floor(Math.random() * 990) + 10,
+    });
     const userID = user._id;
     const token = jwt.sign({ userID, username }, JWT_Password);
     res.status(200).json({ msg: "Signup completed", token });
@@ -99,6 +102,7 @@ router.get("/bulk", async (req, res) => {
       firstname: item.firstname,
       lastname: item.lastname,
       username: item.username,
+      userID : item._id
     })),
   });
 });

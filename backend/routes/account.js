@@ -46,7 +46,7 @@ router.post("/transfer", authoriseUser, async (req, res) => {
     return;
   }
 
-  const sender = await Balance.findOne({ user: senderUserID });
+  const sender = await Balance.findOne({ user: senderUserID }).session(session);
   const receiverUserID = (await User.findOne({ username }).session(session))._id;
   const senderUsername = (await User.findById(sender.user).session(session)).username;
   if (senderUsername == username) {
@@ -60,6 +60,7 @@ router.post("/transfer", authoriseUser, async (req, res) => {
     return;
   }
   // Transaction logic (credit and debit in DB)
+  // Further requests are stopped if 
   try {
     await Balance.findOneAndUpdate(
       { user: senderUserID },

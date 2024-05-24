@@ -11,4 +11,6 @@ mongoose.connect(`${process.env.MONGO_URL}/Paytm`).then(()=>{
 })
 
 }
+
+
 module.exports = {Connect};
