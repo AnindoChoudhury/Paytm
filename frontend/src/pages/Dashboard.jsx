@@ -26,9 +26,9 @@ export default function Dashboard() {
       userID: "74389",
     },
     {
-      firstname: "Prothoma",
-      lastname: "Sarkar",
-      username: "pro",
+      firstname: "Firulal",
+      lastname: "Rahaman",
+      username: "ChPremi",
       userID: "8oeu",
     },
   ];
