@@ -110,9 +110,8 @@ router.put("/update", authoriseUser, async (req, res) => {
   }
 });
 
-router.get("/bulk", async (req, res) => {
-  const filter = req.query.filter;
-  console.log("Received filter "+filter); 
+router.get("/bulk",async (req, res) => {
+  const filter = req.query.filter.slice(1);
   try {
     const users = await User.find(
       {

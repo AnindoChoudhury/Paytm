@@ -12,8 +12,8 @@ export default function Dashboard() {
   const [filter, setFilter] = useState("");
   async function Call() {
     try {
-      const encodedFilter = encodeURIComponent(filter);
-      const url = `http://localhost:3000/api/v1/user/bulk?filter=${encodedFilter}`; 
+     const underscoredFilter = filter.padStart(filter.length+1,'_'); 
+      const url = `http://localhost:3000/api/v1/user/bulk?filter=${underscoredFilter}`; 
       console.log(url);
       const res = await axios.get(url);
       setUsers([...res.data.users]);
