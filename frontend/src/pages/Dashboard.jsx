@@ -10,21 +10,38 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [filter, setFilter] = useState("");
+  const [balance, setBalance] = useState(""); 
   async function Call() {
     try {
      const underscoredFilter = filter.padStart(filter.length+1,'_'); 
       const url = `http://localhost:3000/api/v1/user/bulk?filter=${underscoredFilter}`; 
-      console.log(url);
-      const res = await axios.get(url);
+      const res = await axios.get(url,{
+        headers : 
+        {
+          Authorization : "Bearer "+localStorage.getItem("token"),
+          "Content-Type" : "application/json", 
+        }
+      });
       setUsers([...res.data.users]);
     } catch (err) {
        console.log(err);
     }
   }
+  const fetchBalance = async () =>
+  {
+    const res = await axios.get("http://localhost:3000/api/v1/account/balance",{
+      headers : {
+        Authorization : "Bearer "+localStorage.getItem("token"),
+      }
+    })
+     setBalance(res.data.balance); 
+  }
+  // Pushes dashboardLoadStatus in the localstorage when dashboard loads for the first time. 
   useEffect(() => {
     if (!localStorage.getItem("dashboardLoadStatus"))
       toast(`Welcome ${localStorage.getItem("username")}`);
     localStorage.setItem("dashboardLoadStatus", "true");
+    fetchBalance(); 
   }, []);
   useEffect(() => {
     Call();
@@ -37,11 +54,11 @@ export default function Dashboard() {
         <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
           The Payment App
         </h3>
-        <Button variant="outline">User</Button>
+        <Button variant="outline">You</Button>
       </div>
       <div className="mt-[4rem]">
         <h2 className="scroll-m-20 text-lg font-semibold tracking-tight">
-          Balance Rs.2000
+          Balance Rs {balance}
         </h2>
         <Input
           className="mt-4"
@@ -65,7 +82,7 @@ export default function Dashboard() {
                 <div className="flex justify-end items-center">
                   <Button
                     onClick={() => {
-                      navigate("/send");
+                      navigate(`/send?id=${item.userID}&firstname=${item.firstname}&lastname=${item.lastname}`);
                     }}
                   >
                     Send money

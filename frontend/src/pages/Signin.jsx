@@ -58,7 +58,6 @@ export default function Signin() {
                 console.log(response.data); 
                 localStorage.setItem("username",response.data.username); 
                 localStorage.setItem("dashboardLoadStatus",""); 
-                if(!localStorage.getItem("token"))
                 localStorage.setItem("token",response.data.token); 
                 navigate("/dashboard");
               } catch (err) {

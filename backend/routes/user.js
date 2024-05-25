@@ -110,8 +110,11 @@ router.put("/update", authoriseUser, async (req, res) => {
   }
 });
 
-router.get("/bulk",async (req, res) => {
+router.get("/bulk",authoriseUser, async (req, res) => {
   const filter = req.query.filter.slice(1);
+  const token = req.headers.authorization.split(" ")[1]; 
+  const decoded = jwt.verify(token,JWT_Password); 
+  console.log(decoded); 
   try {
     const users = await User.find(
       {
@@ -129,12 +132,15 @@ router.get("/bulk",async (req, res) => {
       }
     )
     res.status(200).json({
-      users: users.map((item) => ({
+      users: (users.map((item) => ({
         firstname: item.firstname,
         lastname: item.lastname,
         username: item.username,
         userID: item._id,
-      })),
+      }))).filter((item)=>
+      {
+        return item.userID!=decoded.userID; 
+      }),
     });
   } catch (err) {
     console.error(`Error fetching users: ${err.message}`); // Log the error
