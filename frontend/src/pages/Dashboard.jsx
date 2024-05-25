@@ -36,6 +36,15 @@ export default function Dashboard() {
     })
      setBalance(res.data.balance); 
   }
+  let id; 
+  const debounceSearchRequest = (query) =>
+  {
+    clearTimeout(id); 
+    id = setTimeout(()=>
+    {
+      setFilter(query); 
+    },600); 
+  }
   // Pushes dashboardLoadStatus in the localstorage when dashboard loads for the first time. 
   useEffect(() => {
     if (!localStorage.getItem("dashboardLoadStatus"))
@@ -65,7 +74,7 @@ export default function Dashboard() {
           type="email"
           placeholder="search users"
           onChange={(e) => {
-            setFilter(e.target.value);
+            debounceSearchRequest(e.target.value); 
           }}
         />
         <div className="mt-10">
