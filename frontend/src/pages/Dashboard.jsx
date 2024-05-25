@@ -1,37 +1,34 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import axios from "axios";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Toaster, toast } from "sonner";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [users, setUsers] = useState([]);
+  const [filter, setFilter] = useState("");
+  async function Call() {
+    try {
+      const encodedFilter = encodeURIComponent(filter);
+      const url = `http://localhost:3000/api/v1/user/bulk?filter=${encodedFilter}`; 
+      console.log(url);
+      const res = await axios.get(url);
+      setUsers([...res.data.users]);
+    } catch (err) {
+       console.log(err);
+    }
+  }
   useEffect(() => {
-      if(!localStorage.getItem("dashboardLoadStatus"))
+    if (!localStorage.getItem("dashboardLoadStatus"))
       toast(`Welcome ${localStorage.getItem("username")}`);
-      localStorage.setItem("dashboardLoadStatus", "true"); 
+    localStorage.setItem("dashboardLoadStatus", "true");
   }, []);
-  const users = [
-    {
-      firstname: "Anindo",
-      lastname: "Choudhury",
-      username: "ani",
-      userID: "1438",
-    },
-    {
-      firstname: "Aditya",
-      lastname: "Ghosh",
-      username: "adi",
-      userID: "74389",
-    },
-    {
-      firstname: "Firulal",
-      lastname: "Rahaman",
-      username: "ChPremi",
-      userID: "8oeu",
-    },
-  ];
+  useEffect(() => {
+    Call();
+  }, [filter]);
   return (
     <div className="p-4">
       <Toaster position="top-center" />
@@ -46,7 +43,14 @@ export default function Dashboard() {
         <h2 className="scroll-m-20 text-lg font-semibold tracking-tight">
           Balance Rs.2000
         </h2>
-        <Input className="mt-4" type="email" placeholder="search users" />
+        <Input
+          className="mt-4"
+          type="email"
+          placeholder="search users"
+          onChange={(e) => {
+            setFilter(e.target.value);
+          }}
+        />
         <div className="mt-10">
           {users.map((item) => {
             return (

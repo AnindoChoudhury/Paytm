@@ -11,8 +11,7 @@ function authoriseUser (req, res, next)  {
     const decoded = jwt.verify(token, JWT_Password);
     next();
   } catch (err) {
-    res.status(300).json({ msg: "Please create an account first" });
-    console.log(err);
+    res.status(300).json({ msg: "You are not logged in" });
     return;
   }
 };

@@ -8,25 +8,24 @@ const bcrypt = require("bcrypt");
 const JWT_Password = require("../config.js");
 const authoriseUser = require("../middlewares/authMiddleware.js");
 router.post("/signup", async (req, res) => {
-  const {firstname,lastname,username,password} = req.body;
- 
+  const { firstname, lastname, username, password } = req.body;
+
   const passwordSchema = zod.string().min(5);
   // All fields should exist
-  if(!firstname || !lastname || !username || !password)
-  {
-    res.status(300).json({msg : "All fields are required"});
-    return; 
+  if (!firstname || !lastname || !username || !password) {
+    res.status(303).json({ msg: "All fields are required" });
+    return;
   }
   // Zod validation for password
   if (!passwordSchema.safeParse(password).success) {
     res
-      .status(300)
+      .status(400)
       .json({ msg: "password should be at least 5 characters long" });
     return;
   }
   // Prevent duplication of the same username
   if (await User.findOne({ username })) {
-    res.status(300).json({ msg: "Username exists" });
+    res.status(303).json({ msg: "Username exists" });
     return;
   }
   try {
@@ -46,32 +45,39 @@ router.post("/signup", async (req, res) => {
     });
     const userID = user._id;
     const token = jwt.sign({ userID, username }, JWT_Password);
-    // Response is sent with a message and token 
-    res.status(200).json({ msg: "Signup completed", token, username : `${firstname} ${lastname}`});
+    // Response is sent with a message and token
+    res.status(200).json({
+      msg: "Signup completed",
+      token,
+      username: `${firstname} ${lastname}`,
+    });
   } catch (err) {
     res.send("All fields are required" + err);
   }
 });
 
-router.post("/signin", async(req, res) => {
-
-  const {username, password} = req.body; 
-  if(!await User.findOne({username}))
-  {
-    res.status(300).json({msg : "Incorrect username"}); 
-    return ; 
+router.post("/signin", async (req, res) => {
+  const { username, password } = req.body;
+  if (!(await User.findOne({ username }))) {
+    res.status(400).json({ msg: "Incorrect username" });
+    return;
   }
-  const user = await User.findOne({username}); 
-  const match = await bcrypt.compare(password,user.password);                      
-  if(!match)
-  {
-    res.status(300).json({msg : "Incorrect password"});
-    return; 
+  const user = await User.findOne({ username });
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) {
+    res.status(400).json({ msg: "Incorrect password" });
+    return;
   }
-  const token = jwt.sign({userID : user._id,
-  username : user.username},JWT_Password); 
-  console.log(token); 
-  res.status(200).json({ msg: "Login done", username : `${user.firstname} ${user.lastname}`, token});
+  const token = jwt.sign(
+    { userID: user._id, username: user.username },
+    JWT_Password
+  );
+  console.log(token);
+  res.status(200).json({
+    msg: "Login done",
+    username: `${user.firstname} ${user.lastname}`,
+    token,
+  });
 });
 
 router.put("/update", authoriseUser, async (req, res) => {
@@ -85,7 +91,7 @@ router.put("/update", authoriseUser, async (req, res) => {
   });
 
   if (!bodySchema.safeParse(req.body).success) {
-    res.status(303).json({ msg: "Invalid inputs" });
+    res.status(400).json({ msg: "Invalid inputs" });
     return;
   }
 
@@ -105,28 +111,35 @@ router.put("/update", authoriseUser, async (req, res) => {
 });
 
 router.get("/bulk", async (req, res) => {
-  const filter = req.query.filter || "";
-  const users = await User.find({
-    $or: [
+  const filter = req.query.filter;
+  console.log("Received filter "+filter); 
+  try {
+    const users = await User.find(
       {
-        firstname: {
-          $regex: filter,
-        },
-      },
-      {
-        lastname: {
-          $regex: filter,
-        },
-      },
-    ],
-  });
-  res.json({
-    users: users.map((item) => ({
-      firstname: item.firstname,
-      lastname: item.lastname,
-      username: item.username,
-      userID : item._id
-    })),
-  });
+        $or:[{
+          firstname : {
+            $regex : `.*${filter}.*`,
+            $options : "i"
+          }, 
+        },{
+          lastname : {
+            $regex : `.*${filter}.*`,
+            $options : "i"
+          }
+        }]
+      }
+    )
+    res.status(200).json({
+      users: users.map((item) => ({
+        firstname: item.firstname,
+        lastname: item.lastname,
+        username: item.username,
+        userID: item._id,
+      })),
+    });
+  } catch (err) {
+    console.error(`Error fetching users: ${err.message}`); // Log the error
+    res.status(500).json({ msg: "Failed to get users"});
+  }
 });
 module.exports = router;
