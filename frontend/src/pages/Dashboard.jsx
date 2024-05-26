@@ -48,7 +48,7 @@ export default function Dashboard() {
       );
       setBalance(res.data.balance);
     } catch (err) {
-      if (err.response.request.status === 401) navigate("/signin");
+      if (err.response.request.status === 401 || err.response.request.status === 403) navigate("/signin");
     }
   };
   let id;
