@@ -109,7 +109,7 @@ router.put("/update", authoriseUser, async (req, res) => {
   }
 });
 
-router.get("/getBulk", async (req, res) => {
+router.get("/getBulk",authoriseUser, async (req, res) => {
   let decoded;
   try {
     const token = req.headers.authorization.split(" ")[1];

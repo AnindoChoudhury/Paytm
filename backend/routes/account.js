@@ -9,7 +9,7 @@ const jwt = require("jsonwebtoken");
 const JWT_Password = require("../config.js");
 const zod = require("zod");
 // See balance of an user given his/her JWT token in header
-router.get("/getBalance", async (req, res) => {
+router.get("/getBalance",authoriseUser, async (req, res) => {
   let userID; 
   try{
     const token = req.headers.authorization.split(" ")[1];
@@ -30,7 +30,7 @@ router.get("/getBalance", async (req, res) => {
 });
 
 // transfer cash from one account to another
-router.post("/transfer", async (req, res) => {
+router.post("/transfer",authoriseUser, async (req, res) => {
   const reqBodySchema = zod.object({
     toUsernameID: zod.string(),
     amount: zod.number(),
