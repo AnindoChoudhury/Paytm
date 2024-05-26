@@ -1,15 +1,24 @@
 import { Suspense } from "react";
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-const Signup = React.lazy(()=>import("./pages/Signup"))
-const Signin = React.lazy(()=>import("./pages/Signin"))
-const Dashboard = React.lazy(()=>import("./pages/Dashboard"))
-const Send = React.lazy(()=>import("./pages/Send"))
+const Signup = React.lazy(() => import("./pages/Signup"));
+const Signin = React.lazy(() => import("./pages/Signin"));
+const Dashboard = React.lazy(() => import("./pages/Dashboard"));
+const Root = React.lazy(()=> import("./pages/Root")); 
+const Send = React.lazy(() => import("./pages/Send"));
 export default function App() {
   return (
     <div>
       <BrowserRouter>
         <Routes>
+          <Route
+            path="/"
+            element={
+              <Suspense fallback="loading">
+                <Root />
+              </Suspense>
+            }
+          ></Route>
           <Route
             path="signup"
             element={

@@ -9,17 +9,6 @@ const jwt = require("jsonwebtoken");
 const JWT_Password = require("../config.js");
 const zod = require("zod");
 // See balance of an user given his/her JWT token in header
-// router.get("/balance", async (req, res) => {
-//   console.log("req coming in backend");
-//   const token = req.headers.authorization.split(" ")[1];
-//   const UserID = jwt.verify(token, JWT_Password).userID;
-//   try {
-//     const account = await Balance.findOne({ user: UserID });
-//     res.status(200).json({ balance: account.balance });
-//   } catch (err) {
-//     console.log(err);
-//   }
-// });
 router.get("/getBalance", async (req, res) => {
   let userID; 
   try{

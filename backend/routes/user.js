@@ -148,50 +148,6 @@ router.get("/getBulk", async (req, res) => {
   }
 });
 
-// router.get("/bulk", async (req, res) => {
-//   console.log("Bulk route");
-//   const filter = req.query.filter.slice(1);
-//   let decoded;
-//   try {
-//     const token = req.headers.authorization.split(" ")[1];
-//     decoded = jwt.verify(token, JWT_Password);
-//   } catch (err) {
-//     res.status(401).json({msg : "You are not logged in"})
-//   }
-//   console.log(decoded);
-//   try {
-//     const users = await User.find({
-//       $or: [
-//         {
-//           firstname: {
-//             $regex: `.*${filter}.*`,
-//             $options: "i",
-//           },
-//         },
-//         {
-//           lastname: {
-//             $regex: `.*${filter}.*`,
-//             $options: "i",
-//           },
-//         },
-//       ],
-//     });
-//     res.status(200).json({
-//       users: users
-//         .map((item) => ({
-//           firstname: item.firstname,
-//           lastname: item.lastname,
-//           username: item.username,
-//           userID: item._id,
-//         }))
-//         .filter((item) => {
-//           return item.userID != decoded.userID;
-//         }),
-//     });
-//   } catch (err) {
-//     console.error(`Error fetching users: ${err.message}`); // Log the error
-//     res.status(500).json({ msg: "Failed to get users" });
-//   }
-// });
+
 
 module.exports = router;
