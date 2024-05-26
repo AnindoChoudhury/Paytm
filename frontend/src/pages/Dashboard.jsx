@@ -11,30 +11,41 @@ export default function Dashboard() {
   const [users, setUsers] = useState([]);
   const [filter, setFilter] = useState("");
   const [balance, setBalance] = useState(""); 
-  async function Call() {
-    try {
-     const underscoredFilter = filter.padStart(filter.length+1,'_'); 
-      const url = `http://localhost:3000/api/v1/user/bulk?filter=${underscoredFilter}`; 
-      const res = await axios.get(url,{
-        headers : 
-        {
-          Authorization : "Bearer "+localStorage.getItem("token"),
-          "Content-Type" : "application/json", 
-        }
-      });
-      setUsers([...res.data.users]);
-    } catch (err) {
-       console.log(err);
+  const listUsers = async ()=>
+  {
+    console.log("req to getBulk")
+    try{
+    const paddedFilter = filter.padStart(filter.length+1,'_')
+    const res =await axios.get(`http://localhost:3000/api/v1/user/getBulk?paddedFilter=${paddedFilter}`,{
+      headers : {
+        Authorization : "Bearer "+localStorage.getItem("token")
+      }
+    })
+    console.log(res.data.users); 
+    setUsers(res.data.users)
+  }
+    catch(err)
+    {
+      console.log(err) ; 
     }
   }
   const fetchBalance = async () =>
   {
-    const res = await axios.get("http://localhost:3000/api/v1/account/balance",{
+    console.log("Req going out")
+    try{
+    const res = await axios.get("http://localhost:3000/api/v1/account/getBalance",{
       headers : {
         Authorization : "Bearer "+localStorage.getItem("token"),
+        "Content-Type" : "application/json"
       }
     })
-     setBalance(res.data.balance); 
+    setBalance(res.data.balance);  
+  }
+  catch(err)
+  {
+    if(err.response.request.status===401)
+    navigate("/signin") 
+  }
   }
   let id; 
   const debounceSearchRequest = (query) =>
@@ -45,15 +56,16 @@ export default function Dashboard() {
       setFilter(query); 
     },600); 
   }
-  // Pushes dashboardLoadStatus in the localstorage when dashboard loads for the first time. 
+  // Pushes dashboardLoadStatus in the localstorage when dashboard loads for the first time after a signup/signin after toasting a welcome message. 
   useEffect(() => {
     if (!localStorage.getItem("dashboardLoadStatus"))
       toast(`Welcome ${localStorage.getItem("username")}`);
     localStorage.setItem("dashboardLoadStatus", "true");
     fetchBalance(); 
+    listUsers(); 
   }, []);
   useEffect(() => {
-    Call();
+    listUsers(); 
   }, [filter]);
   return (
     <div className="p-4">

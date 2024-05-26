@@ -9,26 +9,54 @@ const jwt = require("jsonwebtoken");
 const JWT_Password = require("../config.js");
 const zod = require("zod");
 // See balance of an user given his/her JWT token in header
-router.get("/balance", authoriseUser, async (req, res) => {
-  const token = req.headers.authorization.split(" ")[1];
-  const UserID = jwt.verify(token, JWT_Password).userID;
+// router.get("/balance", async (req, res) => {
+//   console.log("req coming in backend");
+//   const token = req.headers.authorization.split(" ")[1];
+//   const UserID = jwt.verify(token, JWT_Password).userID;
+//   try {
+//     const account = await Balance.findOne({ user: UserID });
+//     res.status(200).json({ balance: account.balance });
+//   } catch (err) {
+//     console.log(err);
+//   }
+// });
+router.get("/getBalance", async (req, res) => {
+  let userID; 
+  try{
+    const token = req.headers.authorization.split(" ")[1];
+     userID = jwt.verify(token, JWT_Password).userID;
+  }
+  catch(err)
+  {
+    res.status(401).json({msg : "You are not logged in" }); 
+    return ; 
+  }
   try {
-    const account = await Balance.findOne({ user: UserID });
-    res.status(200).json({ balance: account.balance });
+    const user = await Balance.findOne({ user: userID });
+    res.status(200).json({ balance: user.balance });
   } catch (err) {
-    console.log(err);
+    res.status(402).json({ msg: "Failed to fetch balance" });
+    return; 
   }
 });
 
 // transfer cash from one account to another
-router.post("/transfer", authoriseUser, async (req, res) => {
+router.post("/transfer", async (req, res) => {
   const reqBodySchema = zod.object({
     toUsernameID: zod.string(),
     amount: zod.number(),
   });
-  const token = req.headers.authorization.split(" ")[1];
-  const senderUserID = jwt.verify(token, JWT_Password).userID;
-  if (!reqBodySchema.safeParse(req.body).success) {
+  let senderUserID ; 
+  try{
+    const token = req.headers.authorization.split(" ")[1];
+    senderUserID = jwt.verify(token, JWT_Password).userID;
+  }
+ catch(err)
+ {
+  res.status(401).json({msg : "You are unauthorized"}); 
+  return; 
+ }
+  if (!reqBodySchema.safeParse(req.body).success || !req.body.amount) {
     res.status(403).json({ msg: "Wrong inputs" });
     return;
   }
@@ -46,7 +74,7 @@ router.post("/transfer", authoriseUser, async (req, res) => {
     res.status(500).json({ msg: "Not a valid user" });
     return;
   }
-
+  console.log(senderUserID) 
   if (senderUserID.toString() === userID.toString()) {
     await session.abortTransaction();
     res.status(303).json({ msg: "Self transfer is not possible" });
@@ -84,7 +112,7 @@ router.post("/transfer", authoriseUser, async (req, res) => {
     return;
   }
   session.commitTransaction();
-  res.status(200).json({ msg: "Transaction successful" });
+  res.status(200).json({ msg: "Payment successful" });
 });
 
 module.exports = router;

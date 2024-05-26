@@ -77,25 +77,23 @@ export default function Signup() {
                 username: usernameRef.current.value,
                 password: passwordRef.current.value,
               };
+              console.log(reqBody); 
               try {
                 const res = await axios.post(
                   "http://localhost:3000/api/v1/user/signup",
                   reqBody,
-                  {
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                  }
                 );
                 setResponse("");
                 localStorage.setItem("token", res.data.token);
                 localStorage.setItem("username",res.data.username); 
                 localStorage.setItem("dashboardLoadStatus",""); 
+                console.log(res.data); 
                 navigate("/dashboard")
               } catch (err) {
+                console.log(err)
                 setResponse(err.response.data.msg);
               }
-            }}
+             }}
           >
             Signup
           </Button>

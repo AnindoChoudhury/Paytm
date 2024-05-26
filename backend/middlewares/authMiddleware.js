@@ -11,7 +11,7 @@ function authoriseUser (req, res, next)  {
     const decoded = jwt.verify(token, JWT_Password);
     next();
   } catch (err) {
-    res.status(300).json({ msg: "You are not logged in" });
+    res.status(401).json({ msg: "You dont have an account" });
     return;
   }
 };

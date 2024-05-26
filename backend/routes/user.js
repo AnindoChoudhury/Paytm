@@ -72,7 +72,6 @@ router.post("/signin", async (req, res) => {
     { userID: user._id, username: user.username },
     JWT_Password
   );
-  console.log(token);
   res.status(200).json({
     msg: "Login done",
     username: `${user.firstname} ${user.lastname}`,
@@ -110,41 +109,89 @@ router.put("/update", authoriseUser, async (req, res) => {
   }
 });
 
-router.get("/bulk",authoriseUser, async (req, res) => {
-  const filter = req.query.filter.slice(1);
-  const token = req.headers.authorization.split(" ")[1]; 
-  const decoded = jwt.verify(token,JWT_Password); 
-  console.log(decoded); 
+router.get("/getBulk", async (req, res) => {
+  let decoded;
   try {
-    const users = await User.find(
-      {
-        $or:[{
-          firstname : {
-            $regex : `.*${filter}.*`,
-            $options : "i"
-          }, 
-        },{
-          lastname : {
-            $regex : `.*${filter}.*`,
-            $options : "i"
-          }
-        }]
-      }
-    )
-    res.status(200).json({
-      users: (users.map((item) => ({
-        firstname: item.firstname,
-        lastname: item.lastname,
-        username: item.username,
-        userID: item._id,
-      }))).filter((item)=>
-      {
-        return item.userID!=decoded.userID; 
-      }),
+    const token = req.headers.authorization.split(" ")[1];
+    decoded = jwt.verify(token, JWT_Password);
+    filter = req.query.paddedFilter.slice(1);
+    console.log(filter);
+    const users = await User.find({
+      $or: [
+        {
+          firstname: {
+            $regex: `.*${filter}.*`,
+            $options: "i",
+          },
+        },
+        {
+          lastname: {
+            $regex: `.*${filter}.*`,
+            $options: "i",
+          },
+        },
+      ],
     });
+
+    res
+      .status(200)
+      .json({
+        users: users.map((item) => ({
+          firstname: item.firstname,
+          lastname: item.lastname,
+          username: item.username,
+          userID : item._id
+        })).filter((item)=>(item.userID.toString()!==decoded.userID)),
+      });
   } catch (err) {
-    console.error(`Error fetching users: ${err.message}`); // Log the error
-    res.status(500).json({ msg: "Failed to get users"});
+    res.status(401).json({ msg: "You are not logged in" });
   }
 });
+
+// router.get("/bulk", async (req, res) => {
+//   console.log("Bulk route");
+//   const filter = req.query.filter.slice(1);
+//   let decoded;
+//   try {
+//     const token = req.headers.authorization.split(" ")[1];
+//     decoded = jwt.verify(token, JWT_Password);
+//   } catch (err) {
+//     res.status(401).json({msg : "You are not logged in"})
+//   }
+//   console.log(decoded);
+//   try {
+//     const users = await User.find({
+//       $or: [
+//         {
+//           firstname: {
+//             $regex: `.*${filter}.*`,
+//             $options: "i",
+//           },
+//         },
+//         {
+//           lastname: {
+//             $regex: `.*${filter}.*`,
+//             $options: "i",
+//           },
+//         },
+//       ],
+//     });
+//     res.status(200).json({
+//       users: users
+//         .map((item) => ({
+//           firstname: item.firstname,
+//           lastname: item.lastname,
+//           username: item.username,
+//           userID: item._id,
+//         }))
+//         .filter((item) => {
+//           return item.userID != decoded.userID;
+//         }),
+//     });
+//   } catch (err) {
+//     console.error(`Error fetching users: ${err.message}`); // Log the error
+//     res.status(500).json({ msg: "Failed to get users" });
+//   }
+// });
+
 module.exports = router;

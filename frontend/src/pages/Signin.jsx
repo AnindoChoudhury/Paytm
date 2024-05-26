@@ -39,29 +39,26 @@ export default function Signin() {
           <Button
             className="w-full"
             onClick={async () => {
-              const jwtToken = localStorage.getItem("token");
+              const reqBody = {
+                username: usernameRef.current.value,
+                password: passwordRef.current.value,
+              }
+              console.log(reqBody); 
               try {
                 const response = await axios.post(
                   "http://localhost:3000/api/v1/user/signin",
-                  {
-                    username: usernameRef.current.value,
-                    password: passwordRef.current.value,
-                  },
-                  {
-                    headers: {
-                      Authorization: `Bearer ${jwtToken}`,
-                      "Content-Type": "application/json",
-                    },
-                  }
+                  reqBody
                 );
                 setResponse(""); 
                 console.log(response.data); 
                 localStorage.setItem("username",response.data.username); 
+                // removing Load status from localstorage
                 localStorage.setItem("dashboardLoadStatus",""); 
                 localStorage.setItem("token",response.data.token); 
                 navigate("/dashboard");
               } catch (err) {
                 setResponse(err.response.data.msg);
+                console.log(err); 
               }
             }}
           >

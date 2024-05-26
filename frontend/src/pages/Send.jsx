@@ -11,6 +11,7 @@ import {
 import { useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import{useState, useRef} from "react"
+import { useNavigate } from "react-router-dom";
 import axios from "axios"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Toaster, toast } from "sonner";
@@ -18,6 +19,7 @@ import { Toaster, toast } from "sonner";
 export default function CardWithForm() {
   const [searchParams] = useSearchParams(); 
   const inputRef = useRef(null); 
+  const navigate = useNavigate(); 
   return (
     <div className="flex justify-center items-center h-[100vh]">
       <Toaster position="top-center" richColors/>
@@ -25,7 +27,7 @@ export default function CardWithForm() {
         <CardHeader>
           <CardTitle className="text-center scroll-m-20 text-4xl font-extrabold tracking-tight lg:text-2xl">
             Send money
-          </CardTitle>
+          </CardTitle>  
         </CardHeader>
         <CardContent>
           <form>
@@ -64,6 +66,11 @@ export default function CardWithForm() {
             }
             catch(err)
             {
+              if(err.response.status===401)
+              {
+                navigate("/signin"); 
+              } 
+              else
               toast.error(err.response.data.msg)
             }
           }
