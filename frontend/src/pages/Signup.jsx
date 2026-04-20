@@ -89,7 +89,11 @@ export default function Signup() {
                 navigate("/dashboard")
               } catch (err) {
                 console.log(err)
-                setResponse(err.response.data.msg);
+                if (err.response) {
+                    setResponse(err.response.data.msg);
+                } else {
+                  setResponse("Network error: Could not connect to the server.");
+                 }
               }
              }}
           >
