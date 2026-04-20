@@ -10,7 +10,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useNavigate } from "react-router-dom";
 import { useRef, useState } from "react";
-
+// Added render link
 export default function Signup() {
   const navigate = useNavigate();
   const firstnameRef = useRef(null);
