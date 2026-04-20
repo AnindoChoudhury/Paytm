@@ -10,7 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Toaster, toast } from "sonner";
-
+// Added the render link 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
