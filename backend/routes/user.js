@@ -52,7 +52,9 @@ router.post("/signup", async (req, res) => {
       username: `${firstname} ${lastname}`,
     });
   } catch (err) {
-    res.send("All fields are required" + err);
+    res
+      .status(500)
+      .json({ msg: "All fields are required or an internal error occurred." });
   }
 });
 
@@ -70,7 +72,7 @@ router.post("/signin", async (req, res) => {
   }
   const token = jwt.sign(
     { userID: user._id, username: user.username },
-    JWT_Password
+    JWT_Password,
   );
   res.status(200).json({
     msg: "Login done",
@@ -109,7 +111,7 @@ router.put("/update", authoriseUser, async (req, res) => {
   }
 });
 
-router.get("/getBulk",authoriseUser, async (req, res) => {
+router.get("/getBulk", authoriseUser, async (req, res) => {
   let decoded;
   try {
     const token = req.headers.authorization.split(" ")[1];
@@ -133,21 +135,19 @@ router.get("/getBulk",authoriseUser, async (req, res) => {
       ],
     });
 
-    res
-      .status(200)
-      .json({
-        users: users.map((item) => ({
+    res.status(200).json({
+      users: users
+        .map((item) => ({
           firstname: item.firstname,
           lastname: item.lastname,
           username: item.username,
-          userID : item._id
-        })).filter((item)=>(item.userID.toString()!==decoded.userID)),
-      });
+          userID: item._id,
+        }))
+        .filter((item) => item.userID.toString() !== decoded.userID),
+    });
   } catch (err) {
     res.status(401).json({ msg: "You are not logged in" });
   }
 });
-
-
 
 module.exports = router;

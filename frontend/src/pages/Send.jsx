@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
-import{useState, useRef} from "react"
+import{useRef} from "react"
 import { useNavigate } from "react-router-dom";
 import axios from "axios"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
