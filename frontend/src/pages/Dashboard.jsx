@@ -75,7 +75,7 @@ export default function Dashboard() {
 
       <div className="flex justify-between items-center">
         <h3 className="scroll-m-20 text-2xl font-semibold tracking-tight">
-           The Payment App
+          {`${localStorage.getItem("username")}'s Dashboard`}
         </h3>
 
         <Popover>
