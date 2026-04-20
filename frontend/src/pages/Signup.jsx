@@ -1,5 +1,3 @@
-import * as React from "react";
-
 import { Button } from "@/components/ui/button";
 import axios from "axios";
 import {
@@ -80,7 +78,7 @@ export default function Signup() {
               console.log(reqBody); 
               try {
                 const res = await axios.post(
-                  "http://localhost:3000/api/v1/user/signup",
+                  "https://paytm-1-0uqn.onrender.com/api/v1/user/signup",
                   reqBody,
                 );
                 setResponse("");

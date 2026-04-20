@@ -21,7 +21,7 @@ export default function Dashboard() {
     try {
       const paddedFilter = filter.padStart(filter.length + 1, "_");
       const res = await axios.get(
-        `http://localhost:3000/api/v1/user/getBulk?paddedFilter=${paddedFilter}`,
+        `https://paytm-1-0uqn.onrender.com/api/v1/user/getBulk?paddedFilter=${paddedFilter}`,
         {
           headers: {
             Authorization: "Bearer " + localStorage.getItem("token"),
@@ -38,7 +38,7 @@ export default function Dashboard() {
     console.log("Req going out");
     try {
       const res = await axios.get(
-        "http://localhost:3000/api/v1/account/getBalance",
+        "https://paytm-1-0uqn.onrender.com/api/v1/account/getBalance",
         {
           headers: {
             Authorization: "Bearer " + localStorage.getItem("token"),

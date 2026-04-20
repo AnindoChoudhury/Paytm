@@ -51,7 +51,7 @@ export default function CardWithForm() {
           {
             try
             {
-               const res = await axios.post("http://localhost:3000/api/v1/account/transfer",
+               const res = await axios.post("https://paytm-1-0uqn.onrender.com/api/v1/account/transfer",
               {
                  toUsernameID : searchParams.get("id"), 
                  amount : +inputRef.current.value, 
