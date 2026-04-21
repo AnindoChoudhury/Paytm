@@ -75,7 +75,7 @@ export default function Signup() {
                 username: usernameRef.current.value,
                 password: passwordRef.current.value,
               };
-              console.log(reqBody); 
+              // console.log(reqBody); 
               try {
                 const res = await axios.post(
                   "https://paytm-1-0uqn.onrender.com/api/v1/user/signup",
@@ -85,7 +85,7 @@ export default function Signup() {
                 localStorage.setItem("token", res.data.token);
                 localStorage.setItem("username",res.data.username); 
                 localStorage.setItem("dashboardLoadStatus",""); 
-                console.log(res.data); 
+                // console.log(res.data); 
                 navigate("/dashboard")
               } catch (err) {
                 console.log(err)

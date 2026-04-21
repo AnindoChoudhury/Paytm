@@ -43,14 +43,14 @@ export default function Signin() {
                 username: usernameRef.current.value,
                 password: passwordRef.current.value,
               }
-              console.log(reqBody); 
+              // console.log(reqBody); 
               try {
                 const response = await axios.post(
                   "https://paytm-1-0uqn.onrender.com/api/v1/user/signin",
                   reqBody
                 );
                 setResponse(""); 
-                console.log(response.data); 
+                // console.log(response.data); 
                 localStorage.setItem("username",response.data.username); 
                 // removing Load status from localstorage
                 localStorage.setItem("dashboardLoadStatus",""); 
